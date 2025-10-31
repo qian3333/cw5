@@ -1,435 +1,46 @@
 package com.example.cw5
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContentScope
-
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Note
-import androidx.compose.material.icons.filled.Task
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.cw5.ui.theme.Cw5Theme
-
-
-sealed class Screen(val route: String) {
-    object Notes : Screen("notes")
-    object Tasks : Screen("tasks")
-    object Calendar : Screen("calendar")
-}
-
-
-class NotesViewModel : ViewModel() {
-    val notes = mutableStateListOf<String>()
-    fun addNote(note: String) {
-        if (note.isNotBlank()) {
-            notes.add(note)
-        }
-    }
-}
-
-class TasksViewModel : ViewModel() {
-    class Task(val id: Int, val text: String, isCompleted: Boolean = false) {
-        var isCompleted by mutableStateOf(isCompleted)
-    }
-
-    private var nextId = 0
-    val tasks = mutableStateListOf<Task>()
-
-    fun addTask(taskText: String) {
-        if (taskText.isNotBlank()) {
-            tasks.add(Task(id = nextId++, text = taskText))
-        }
-    }
-
-    fun toggleTaskCompletion(taskId: Int) {
-        val task = tasks.find { it.id == taskId }
-        if (task != null) {
-            task.isCompleted = !task.isCompleted
-        }
-    }
-}
-
-
-@Composable
-fun AppTopBar(title: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Text(text = title, style = MaterialTheme.typography.titleLarge)
-    }
-}
-
-
-@Composable
-fun AppBottomNavigation(
-    navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route
-
-    NavigationBar(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface
-    ) {
-        // Notes Item
-        NavigationBarItem(
-            icon = { androidx.compose.material3.Icon(Icons.Default.Note, contentDescription = "Notes") },
-            label = { Text("Notes") },
-            selected = currentRoute == Screen.Notes.route,
-            onClick = {
-                navController.navigate(Screen.Notes.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-
-        // Tasks Item
-        NavigationBarItem(
-            icon = { androidx.compose.material3.Icon(Icons.Default.Task, contentDescription = "Tasks") },
-            label = { Text("Tasks") },
-            selected = currentRoute == Screen.Tasks.route,
-            onClick = {
-                navController.navigate(Screen.Tasks.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-
-        // Calendar Item
-        NavigationBarItem(
-            icon = { androidx.compose.material3.Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar") },
-            label = { Text("Calendar") },
-            selected = currentRoute == Screen.Calendar.route,
-            onClick = {
-                navController.navigate(Screen.Calendar.route) {
-                    launchSingleTop = true
-                    restoreState = true
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
-                    }
-                }
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NotesScreen(
-    viewModel: NotesViewModel,
-    modifier: Modifier = Modifier
-) {
-    var newNoteText by rememberSaveable { mutableStateOf("") }
-    val notes = viewModel.notes
-
-    Column(modifier = modifier.fillMaxSize()) {
-        AppTopBar(title = "Notes")
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // Add Note TextField
-            TextField(
-                value = newNoteText,
-                onValueChange = { newNoteText = it },
-                label = { Text("Enter new note") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Button(
-                onClick = {
-                    viewModel.addNote(newNoteText)
-                    newNoteText = "" // Clear input after adding
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                Text("Add Note")
-            }
-
-            // Notes List
-            if (notes.isNotEmpty()) {
-                Text("Your Notes:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
-                LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
-                    items(notes) { note ->
-                        Text(
-                            text = note,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No notes yet. Add your first note!")
-                }
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TasksScreen(
-    viewModel: TasksViewModel,
-    modifier: Modifier = Modifier
-) {
-    var newTaskText by rememberSaveable { mutableStateOf("") }
-    val tasks = viewModel.tasks
-
-    Column(modifier = modifier.fillMaxSize()) {
-        AppTopBar(title = "Tasks")
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            // Add Task TextField
-            TextField(
-                value = newTaskText,
-                onValueChange = { newTaskText = it },
-                label = { Text("Enter new task") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Button(
-                onClick = {
-                    viewModel.addTask(newTaskText)
-                    newTaskText = "" // Clear input after adding
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            ) {
-                Text("Add Task")
-            }
-
-            // Tasks List
-            if (tasks.isNotEmpty()) {
-                Text("Your Tasks:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
-                LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
-                    items(tasks) { task ->
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = task.text,
-                                    style = if (task.isCompleted) {
-                                        MaterialTheme.typography.bodyLarge.copy(
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    } else {
-                                        MaterialTheme.typography.bodyLarge
-                                    }
-                                )
-                                Checkbox(
-                                    checked = task.isCompleted,
-                                    onCheckedChange = { viewModel.toggleTaskCompletion(task.id) }
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No tasks yet. Add your first task!")
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CalendarScreen(modifier: Modifier = Modifier) {
-    // Static calendar placeholder with animation trigger
-    var showAnimation by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        showAnimation = true // Trigger animation when screen loads
-    }
-
-    Column(modifier = modifier.fillMaxSize()) {
-        AppTopBar(title = "Calendar")
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = showAnimation,
-                enter = fadeIn(animationSpec = tween(1000)),
-                exit = fadeOut(animationSpec = tween(500))
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    androidx.compose.material3.Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "Calendar",
-                        modifier = Modifier.padding(bottom = 16.dp).size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "Calendar View (Static Placeholder)",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Text(
-                        text = "Full calendar functionality coming soon!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-@OptIn(ExperimentalAnimationApi::class)
-fun NavGraphBuilder.animatedComposable(
-    route: String,
-    content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
-) {
-    composable(
-        route = route,
-        enterTransition = {
-            fadeIn(animationSpec = tween(300))
-        },
-        exitTransition = {
-            fadeOut(animationSpec = tween(200))
-        },
-        popEnterTransition = {
-            fadeIn(animationSpec = tween(300))
-        },
-        popExitTransition = {
-            fadeOut(animationSpec = tween(200))
-        }
-    ) { entry ->
-        content(entry)
-    }
-}
-
-
-@Composable
-fun MainApp() {
-    val navController = rememberNavController()
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = { AppBottomNavigation(navController = navController) }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Notes.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            // Animated screens
-            animatedComposable(Screen.Notes.route) {
-                val viewModel: NotesViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-                NotesScreen(viewModel = viewModel)
-            }
-
-            animatedComposable(Screen.Tasks.route) {
-                val viewModel: TasksViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
-                TasksScreen(viewModel = viewModel)
-            }
-
-            animatedComposable(Screen.Calendar.route) {
-                CalendarScreen()
-            }
-        }
-    }
-}
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -437,51 +48,497 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Cw5Theme {
-                MainApp()
+                CityTourApp()
             }
         }
     }
 }
 
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, device = "id:pixel_5")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NotesScreenPreview() {
-    Cw5Theme {
-        val viewModel = NotesViewModel().apply {
-            addNote("First preview note")
-            addNote("Second preview note")
+fun CityTourApp() {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(getScreenTitle(currentRoute)) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                navigationIcon = {
+                    // Show back button only if not on home screen
+                    if (currentRoute != Screen.Home.route) {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    // Show home button on all screens except home
+                    if (currentRoute != Screen.Home.route) {
+                        IconButton(onClick = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Home,
+                                contentDescription = "Home"
+                            )
+                        }
+                    }
+                }
+            )
         }
-        NotesScreen(viewModel = viewModel)
+    ) { innerPadding ->
+        CityTourNavGraph(
+            navController = navController,
+            modifier = Modifier.padding(innerPadding)
+        )
     }
 }
 
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, device = "id:pixel_5")
+// Navigation Graph
 @Composable
-fun TasksScreenPreview() {
-    Cw5Theme {
-        val viewModel = TasksViewModel().apply {
-            addTask("Buy groceries")
-            addTask("Finish homework")
+fun CityTourNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route,
+        modifier = modifier
+    ) {
+        // Home Screen
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onNavigateToCategories = {
+                    navController.navigate(Screen.Categories.route)
+                }
+            )
         }
-        TasksScreen(viewModel = viewModel)
+
+        // Categories Screen
+        composable(Screen.Categories.route) {
+            CategoriesScreen(
+                onCategoryClick = { category ->
+                    navController.navigate(Screen.List.createRoute(category))
+                }
+            )
+        }
+
+        // List Screen (with String argument)
+        composable(
+            route = Screen.List.route,
+            arguments = listOf(
+                navArgument("category") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            ListScreen(
+                category = category,
+                onLocationClick = { locationId ->
+                    navController.navigate(Screen.Detail.createRoute(category, locationId))
+                }
+            )
+        }
+
+        // Detail Screen (with String and Int arguments)
+        composable(
+            route = Screen.Detail.route,
+            arguments = listOf(
+                navArgument("category") { type = NavType.StringType },
+                navArgument("locationId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val category = backStackEntry.arguments?.getString("category") ?: ""
+            val locationId = backStackEntry.arguments?.getInt("locationId") ?: 0
+            DetailScreen(
+                category = category,
+                locationId = locationId
+            )
+        }
     }
 }
 
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun CalendarScreenPreview() {
-    Cw5Theme {
-        CalendarScreen()
+// Sealed class for Screen routes
+sealed class Screen(val route: String) {
+    object Home : Screen("home")
+    object Categories : Screen("categories")
+    object List : Screen("list/{category}") {
+        fun createRoute(category: String) = "list/$category"
+    }
+    object Detail : Screen("detail/{category}/{locationId}") {
+        fun createRoute(category: String, locationId: Int) = "detail/$category/$locationId"
     }
 }
 
-@Preview(showBackground = true, device = "id:pixel_5")
+// Helper function to get screen title
+fun getScreenTitle(route: String?): String {
+    return when {
+        route == null -> "City Tour"
+        route == Screen.Home.route -> "Welcome to Boston"
+        route == Screen.Categories.route -> "Explore Categories"
+        route.startsWith("list/") -> {
+            val category = route.substringAfter("list/")
+            category.replaceFirstChar { it.uppercase() }
+        }
+        route.startsWith("detail/") -> "Location Details"
+        else -> "City Tour"
+    }
+}
+
+// Data Models
+data class Category(
+    val name: String,
+    val description: String,
+    val icon: String
+)
+
+data class Location(
+    val id: Int,
+    val name: String,
+    val category: String,
+    val description: String,
+    val address: String,
+    val highlights: List<String>
+)
+
+// Sample Data
+object TourData {
+    val categories = listOf(
+        Category("Museums", "Explore world-class museums and exhibitions", "🏛️"),
+        Category("Parks", "Discover beautiful parks and green spaces", "🌳"),
+        Category("Restaurants", "Taste the finest cuisine in Boston", "🍽️"),
+        Category("Landmarks", "Visit iconic landmarks and historical sites", "🗽")
+    )
+
+    val locations = listOf(
+        // Museums
+        Location(1, "MIT Museum", "Museums", "Explore science and technology exhibits", "265 Massachusetts Ave", listOf("Robotics", "Holography", "Innovation")),
+        Location(2, "Museum of Fine Arts", "Museums", "One of the most comprehensive art museums", "465 Huntington Ave", listOf("Ancient Art", "Contemporary", "Impressionism")),
+        Location(3, "Boston Children's Museum", "Museums", "Interactive exhibits for kids", "308 Congress St", listOf("Science", "Culture", "Art Activities")),
+        
+        // Parks
+        Location(4, "Boston Common", "Parks", "America's oldest public park", "139 Tremont St", listOf("Walking Trails", "Frog Pond", "Public Garden")),
+        Location(5, "Charles River Esplanade", "Parks", "Scenic riverfront park", "Along Charles River", listOf("Biking", "Jogging", "River Views")),
+        Location(6, "Arnold Arboretum", "Parks", "Historic botanical garden", "125 Arborway", listOf("Plant Collections", "Hiking", "Photography")),
+        
+        // Restaurants
+        Location(7, "Union Oyster House", "Restaurants", "Historic seafood restaurant since 1826", "41 Union St", listOf("Oysters", "Clam Chowder", "Historic Setting")),
+        Location(8, "Neptune Oyster", "Restaurants", "Award-winning seafood spot", "63 Salem St", listOf("Raw Bar", "Lobster Roll", "Craft Cocktails")),
+        Location(9, "Oleana", "Restaurants", "Mediterranean cuisine with local ingredients", "134 Hampshire St", listOf("Farm-to-Table", "Mezze", "Garden Patio")),
+        
+        // Landmarks
+        Location(10, "Freedom Trail", "Landmarks", "2.5-mile path through historic sites", "Boston Common", listOf("16 Historical Sites", "Guided Tours", "Revolutionary History")),
+        Location(11, "Faneuil Hall", "Landmarks", "Historic marketplace and meeting hall", "1 Faneuil Hall Sq", listOf("Shopping", "Street Performers", "Food Court")),
+        Location(12, "Boston Harbor", "Landmarks", "Historic waterfront and harbor", "Atlantic Ave", listOf("Harbor Cruises", "Islands", "Seafood"))
+    )
+
+    fun getLocationsByCategory(category: String): List<Location> {
+        return locations.filter { it.category.equals(category, ignoreCase = true) }
+    }
+
+    fun getLocationById(id: Int): Location? {
+        return locations.find { it.id == id }
+    }
+}
+
+// Screen Composables
+
 @Composable
-fun MainAppPreview() {
-    Cw5Theme {
-        MainApp()
+fun HomeScreen(
+    onNavigateToCategories: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "🏙️",
+            style = MaterialTheme.typography.displayLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        Text(
+            text = "Welcome to Boston City Tour",
+            style = MaterialTheme.typography.headlineLarge,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Text(
+            text = "Discover the best attractions, dining, and experiences in historic Boston",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+        Button(
+            onClick = onNavigateToCategories,
+            modifier = Modifier.fillMaxWidth(0.7f)
+        ) {
+            Text("Start Exploring", style = MaterialTheme.typography.titleMedium)
+        }
+    }
+}
+
+@Composable
+fun CategoriesScreen(
+    onCategoryClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "What would you like to explore?",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(TourData.categories) { category ->
+                CategoryCard(
+                    category = category,
+                    onClick = { onCategoryClick(category.name) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryCard(
+    category: Category,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "${category.icon} ${category.name}",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = category.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun ListScreen(
+    category: String,
+    onLocationClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val locations = TourData.getLocationsByCategory(category)
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "All $category",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Text(
+            text = "${locations.size} locations found",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        if (locations.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No locations found in this category",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(locations) { location ->
+                    LocationCard(
+                        location = location,
+                        onClick = { onLocationClick(location.id) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LocationCard(
+    location: Location,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = location.name,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = location.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = "📍 ${location.address}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(
+    category: String,
+    locationId: Int,
+    modifier: Modifier = Modifier
+) {
+    val location = TourData.getLocationById(locationId)
+
+    if (location == null) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Location not found",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
+        return
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = location.name,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Category: $category",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                    Text(
+                        text = "Location ID: $locationId",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+        }
+
+        item {
+            Column {
+                Text(
+                    text = "About",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = location.description,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        item {
+            Column {
+                Text(
+                    text = "📍 Address",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = location.address,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        item {
+            Column {
+                Text(
+                    text = "✨ Highlights",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                location.highlights.forEach { highlight ->
+                    Text(
+                        text = "• $highlight",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(start = 8.dp, bottom = 4.dp)
+                    )
+                }
+            }
+        }
     }
 }
