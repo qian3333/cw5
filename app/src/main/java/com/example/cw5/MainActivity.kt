@@ -330,42 +330,131 @@ fun TasksScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(modifier: Modifier = Modifier) {
-    // Static calendar placeholder with animation trigger
+    // Static calendar with current month
     var showAnimation by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        showAnimation = true // Trigger animation when screen loads
+        showAnimation = true
+    }
+
+    // Get current date info
+    val currentMonth = remember { java.util.Calendar.getInstance() }
+    val monthName = remember {
+        java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.getDefault())
+            .format(currentMonth.time)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
         AppTopBar(title = "Calendar")
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
+                .padding(16.dp)
         ) {
             androidx.compose.animation.AnimatedVisibility(
                 visible = showAnimation,
                 enter = fadeIn(animationSpec = tween(1000)),
                 exit = fadeOut(animationSpec = tween(500))
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    androidx.compose.material3.Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = "Calendar",
-                        modifier = Modifier.padding(bottom = 16.dp).size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Month header
                     Text(
-                        text = "Calendar View (Static Placeholder)",
-                        style = MaterialTheme.typography.headlineSmall
+                        text = monthName,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
+
+                    // Days of week header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat").forEach { day ->
+                            Text(
+                                text = day,
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.weight(1f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    // Generate calendar grid
+                    val calendar = java.util.Calendar.getInstance()
+                    calendar.set(java.util.Calendar.DAY_OF_MONTH, 1)
+                    val firstDayOfWeek = calendar.get(java.util.Calendar.DAY_OF_WEEK) - 1
+                    val daysInMonth = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+                    val today = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH)
+
+                    // Calculate total cells needed
+                    val totalCells = firstDayOfWeek + daysInMonth
+                    val rows = (totalCells + 6) / 7
+
+                    Column(modifier = Modifier.padding(top = 8.dp)) {
+                        for (week in 0 until rows) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                for (dayOfWeek in 0..6) {
+                                    val cellIndex = week * 7 + dayOfWeek
+                                    val dayNumber = cellIndex - firstDayOfWeek + 1
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (cellIndex >= firstDayOfWeek && dayNumber <= daysInMonth) {
+                                            // Valid day
+                                            val isToday = dayNumber == today
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(40.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                if (isToday) {
+                                                    // Highlight today
+                                                    androidx.compose.foundation.Canvas(
+                                                        modifier = Modifier.size(40.dp)
+                                                    ) {
+                                                        drawCircle(
+                                                            color = androidx.compose.ui.graphics.Color(0xFF6200EE),
+                                                            radius = size.minDimension / 2
+                                                        )
+                                                    }
+                                                }
+                                                Text(
+                                                    text = dayNumber.toString(),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = if (isToday) {
+                                                        androidx.compose.ui.graphics.Color.White
+                                                    } else {
+                                                        MaterialTheme.colorScheme.onSurface
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Footer info
                     Text(
-                        text = "Full calendar functionality coming soon!",
+                        text = "Today: ${java.text.SimpleDateFormat("EEEE, MMMM d, yyyy", java.util.Locale.getDefault()).format(java.util.Date())}",
                         style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(top = 8.dp)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 24.dp)
                     )
                 }
             }
