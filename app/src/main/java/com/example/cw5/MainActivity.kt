@@ -328,14 +328,14 @@ fun TasksScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(modifier: Modifier = Modifier) {
-    // Static calendar with current month
+    // Static calendar
     var showAnimation by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         showAnimation = true
     }
 
-    // Get current date info
+    // Get current date
     val currentMonth = remember { java.util.Calendar.getInstance() }
     val monthName = remember {
         java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.getDefault())
@@ -447,7 +447,6 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                         }
                     }
 
-                    // Footer info
                     Text(
                         text = "Today: ${java.text.SimpleDateFormat("EEEE, MMMM d, yyyy", java.util.Locale.getDefault()).format(java.util.Date())}",
                         style = MaterialTheme.typography.bodyMedium,
