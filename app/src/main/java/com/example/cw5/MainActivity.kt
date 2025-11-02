@@ -1,6 +1,5 @@
 package com.example.cw5
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -45,7 +44,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
@@ -529,48 +527,5 @@ class MainActivity : ComponentActivity() {
                 MainApp()
             }
         }
-    }
-}
-
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun NotesScreenPreview() {
-    Cw5Theme {
-        val viewModel = NotesViewModel().apply {
-            addNote("First preview note")
-            addNote("Second preview note")
-        }
-        NotesScreen(viewModel = viewModel)
-    }
-}
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun TasksScreenPreview() {
-    Cw5Theme {
-        val viewModel = TasksViewModel().apply {
-            addTask("Buy groceries")
-            addTask("Finish homework")
-        }
-        TasksScreen(viewModel = viewModel)
-    }
-}
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun CalendarScreenPreview() {
-    Cw5Theme {
-        CalendarScreen()
-    }
-}
-
-@Preview(showBackground = true, device = "id:pixel_5")
-@Composable
-fun MainAppPreview() {
-    Cw5Theme {
-        MainApp()
     }
 }
