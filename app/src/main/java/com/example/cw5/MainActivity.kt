@@ -428,7 +428,7 @@ fun LocationCard(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-                text = "📍 ${location.address}",
+                text = "${location.address}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -512,7 +512,7 @@ fun DetailScreen(
         item {
             Column {
                 Text(
-                    text = "📍 Address",
+                    text = "Address",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -527,7 +527,7 @@ fun DetailScreen(
         item {
             Column {
                 Text(
-                    text = "✨ Highlights",
+                    text = "Highlights",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
