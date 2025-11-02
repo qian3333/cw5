@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -25,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -110,6 +112,17 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = {
                                 Text(topBarTitleForRoute(currentRoute))
+                            },
+                            navigationIcon = {
+                                // 在详情页显示返回按钮
+                                if (currentRoute?.startsWith("recipe_detail") == true) {
+                                    IconButton(onClick = { navController.navigateUp() }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "返回"
+                                        )
+                                    }
+                                }
                             }
                         )
                     },
@@ -153,10 +166,10 @@ class MainActivity : ComponentActivity() {
                             val recipeId = backStackEntry.arguments?.getString("recipeId")?.toIntOrNull()
                             val recipe = recipeId?.let { recipeViewModel.getRecipeById(it) }
 
-                            if (recipe != null) {
-                                RecipeDetailScreen(recipe = recipe)
-                            } else {
-                                ErrorScreen(onBackClick = { navController.popBackStack() })
+                            recipe?.let {
+                                RecipeDetailScreen(recipe = it)
+                            } ?: run {
+                                navController.navigateUp()
                             }
                         }
                     }
@@ -387,24 +400,5 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             text = "Settings Screen",
             style = MaterialTheme.typography.headlineMedium
         )
-    }
-}
-
-// Error Screen (for invalid recipe ID)
-@Composable
-fun ErrorScreen(onBackClick: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
-    ) {
-        Text(
-            text = "Recipe Not Found",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.error
-        )
-        Button(onClick = onBackClick) {
-            Text("Go Back")
-        }
     }
 }
