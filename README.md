@@ -1,3 +1,6 @@
+***AI Usage Documentation***
+
+
 **Where AI helped:**
 - AI was really useful for setting up the basic navigation structure with NavHost and sealed classes
 - It helped me quickly generate the sample data for all 12 Boston locations
