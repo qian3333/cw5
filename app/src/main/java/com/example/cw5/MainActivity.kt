@@ -71,7 +71,7 @@ fun CityTourApp() {
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 navigationIcon = {
-                    // Show back button only if not on home screen
+                    // show back button only if not on home screen
                     if (currentRoute != Screen.Home.route) {
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(
@@ -82,7 +82,7 @@ fun CityTourApp() {
                     }
                 },
                 actions = {
-                    // Show home button on all screens except home
+                    // show home button on all screens except home
                     if (currentRoute != Screen.Home.route) {
                         IconButton(onClick = {
                             navController.navigate(Screen.Home.route) {
@@ -118,6 +118,7 @@ fun CityTourNavGraph(
         startDestination = Screen.Home.route,
         modifier = modifier
     ) {
+
         // Home Screen
         composable(Screen.Home.route) {
             HomeScreen(
@@ -136,7 +137,7 @@ fun CityTourNavGraph(
             )
         }
 
-        // List Screen (with String argument)
+        // List Screen / String argument)
         composable(
             route = Screen.List.route,
             arguments = listOf(
@@ -152,7 +153,7 @@ fun CityTourNavGraph(
             )
         }
 
-        // Detail Screen (with String and Int arguments)
+        // Detail Screen / String and Int arguments)
         composable(
             route = Screen.Detail.route,
             arguments = listOf(
@@ -170,7 +171,7 @@ fun CityTourNavGraph(
     }
 }
 
-// Sealed class for Screen routes
+//Screen routes
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Categories : Screen("categories")
@@ -182,7 +183,7 @@ sealed class Screen(val route: String) {
     }
 }
 
-// Helper function to get screen title
+// Helper function
 fun getScreenTitle(route: String?): String {
     return when {
         route == null -> "City Tour"
@@ -428,7 +429,7 @@ fun LocationCard(
                 modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-                text = "${location.address}",
+                text = location.address,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary
             )
