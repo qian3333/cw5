@@ -2,7 +2,7 @@
 
 
 **Where AI helped:**
-- AI was really useful for setting up the basic navigation structure with NavHost and sealed classes
+- AI is useful for setting up the basic navigation structure with NavHost and sealed classes
 - It helped me quickly generate the sample data for all 12 Boston locations
 - The Material 3 styling and card layouts mostly use ai suggestions
 
